@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Hikaya</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Hikaya">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fff4e8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{
+  --fond:#fff4e8; --carte:#ffffff; --encre:#3b2a5c; --doux:#8a7aa8;
+  --violet:#7b5cff; --rose:#ff6fa8; --jaune:#ffc93c; --vert:#3fbf8f;
+  --ombre:0 6px 0 rgba(59,42,92,.12);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--fond);color:var(--encre);
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,system-ui,sans-serif;
+  -webkit-user-select:none;user-select:none;overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+.screen{display:none;min-height:100dvh;flex-direction:column;
+  padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px)}
+.screen.active{display:flex}
+
+/* Accueil */
+#home{align-items:center;justify-content:center;gap:18px;text-align:center;position:relative}
+.logo{font-size:5.5rem;line-height:1;animation:flotte 3s ease-in-out infinite}
+h1{font-size:2.6rem;margin:0;letter-spacing:-.02em;color:var(--violet)}
+.sous{margin:0 0 10px;color:var(--doux);font-size:1.1rem}
+.gros{width:min(100%,360px);padding:22px;border-radius:28px;font-size:1.5rem;font-weight:800;box-shadow:var(--ombre)}
+.gros:active{transform:translateY(4px);box-shadow:0 2px 0 rgba(59,42,92,.12)}
+.b-violet{background:var(--violet);color:#fff}
+.b-jaune{background:var(--jaune)}
+.b-blanc{background:var(--carte)}
+#reglages{position:absolute;top:calc(env(safe-area-inset-top) + 12px);right:16px;font-size:1.6rem;background:none;opacity:.5}
+
+/* Étapes */
+.barre{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rond{width:56px;height:56px;border-radius:50%;background:var(--carte);font-size:1.6rem;box-shadow:var(--ombre);flex:none}
+#dots{display:flex;gap:8px}
+#dots i{width:12px;height:12px;border-radius:50%;background:#e4dbf3}
+#dots i.fait{background:var(--vert)} #dots i.ici{background:var(--violet);transform:scale(1.3)}
+#question{font-size:1.6rem;text-align:center;margin:18px 4px}
+#grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding-bottom:12px}
+@media (min-width:600px){#grid{grid-template-columns:repeat(5,1fr)}}
+.choix{background:var(--carte);border-radius:24px;padding:12px 4px 8px;box-shadow:var(--ombre);
+  display:flex;flex-direction:column;align-items:center;gap:2px}
+.choix .emo{font-size:3.2rem;line-height:1.15}
+.choix .lbl{font-size:.8rem;color:var(--doux)}
+.choix:active,.choix.sel{background:#efe9ff;transform:scale(.95)}
+
+/* Récap */
+#recap{align-items:center;justify-content:center;gap:26px;text-align:center}
+#recapEmo{display:flex;gap:10px;font-size:3.6rem}
+#recapEmo span{animation:flotte 2.4s ease-in-out infinite}
+#recapEmo span:nth-child(2){animation-delay:.3s}#recapEmo span:nth-child(3){animation-delay:.6s}#recapEmo span:nth-child(4){animation-delay:.9s}
+#raconte{font-size:2rem;padding:28px}
+
+/* Histoire */
+#story{gap:12px;padding-top:calc(env(safe-area-inset-top) + 8px)}
+#titre{font-size:1.15rem;margin:0;text-align:center;flex:1}
+#scene{position:relative;width:100%;aspect-ratio:4/3;border-radius:28px;overflow:hidden;box-shadow:var(--ombre);flex:none}
+.ciel{position:absolute;inset:0}
+.sol{position:absolute;left:-10%;right:-10%;bottom:-20%;height:45%;border-radius:50% 50% 0 0}
+.nuit{position:absolute;inset:0;background:rgba(15,15,60,.45);transition:opacity 1s}
+.etoiles{position:absolute;top:8%;left:12%;font-size:1.3rem;letter-spacing:1.2rem;animation:clignote 2s infinite}
+.astre{position:absolute;top:6%;right:6%;font-size:2.6rem}
+.deco{position:absolute;line-height:1}
+.perso{position:absolute;bottom:12%;line-height:1}
+.heros{left:14%;font-size:5.2rem}
+.ami{left:60%;font-size:3.6rem}
+.objet{position:absolute;line-height:1;font-size:3rem}
+.objet i{position:absolute;right:-18px;top:-14px;font-size:1.6rem;font-style:normal;animation:clignote 1s infinite}
+.apparait{left:42%;top:22%;animation:apparait 1.2s ease-out both, flotte 2s 1.2s ease-in-out infinite}
+.utilise{left:40%;bottom:40%;animation:tourne 3s linear infinite}
+.coeurs b{position:absolute;bottom:-10%;font-size:2rem;animation:monte 3.5s ease-in infinite}
+.coeurs b:nth-child(1){left:10%}.coeurs b:nth-child(2){left:30%;animation-delay:.6s}.coeurs b:nth-child(3){left:50%;animation-delay:1.2s}
+.coeurs b:nth-child(4){left:70%;animation-delay:.3s}.coeurs b:nth-child(5){left:88%;animation-delay:1.6s}
+.flotte{animation:flotte 3s ease-in-out infinite}
+.saute{animation:saute .8s ease-in-out infinite}
+.entre{animation:entre 1s ease-out both}
+.entre.saute{animation:saute .8s .2s ease-in-out infinite}
+@keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes saute{0%,100%{transform:translateY(0)}50%{transform:translateY(-22px)}}
+@keyframes entre{from{transform:translateX(120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes apparait{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes tourne{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg) scale(1.15)}}
+@keyframes clignote{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pluie{from{transform:translateY(-20%);opacity:1}to{transform:translateY(120%);opacity:0}}
+@keyframes monte{from{transform:translateY(0);opacity:0}15%{opacity:1}to{transform:translateY(-320%);opacity:0}}
+.commandes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.commandes .gros{width:100%;padding:16px;font-size:1.2rem;border-radius:22px}
+#lire{grid-column:1/-1;font-size:1.5rem}
+#texte{background:var(--carte);border-radius:22px;padding:16px 18px;font-size:1.15rem;line-height:1.6;box-shadow:var(--ombre)}
+#texte span{transition:background .3s;border-radius:6px}
+#texte span.lu{background:#fff0a8}
+
+/* Bibliothèque */
+#library{gap:12px}
+#library h2{margin:0;flex:1;text-align:center}
+.item{display:flex;gap:8px}
+.ouvrir{flex:1;display:flex;align-items:center;gap:12px;text-align:left;background:var(--carte);border-radius:20px;padding:14px;box-shadow:var(--ombre);font-size:1.05rem}
+.ouvrir .emo{font-size:2rem;flex:none}
+.suppr{background:none;font-size:1.4rem;opacity:.6}
+.vide{text-align:center;color:var(--doux);margin-top:40px;line-height:1.6}
+/* Réglages */
+#settings{gap:16px;-webkit-user-select:auto;user-select:auto}
+.champ{display:flex;flex-direction:column;gap:8px;background:var(--carte);border-radius:22px;padding:16px;box-shadow:var(--ombre);font-weight:700}
+.champ input[type=text]{font:inherit;font-size:1.2rem;padding:12px 14px;border:2px solid #e4dbf3;border-radius:14px;color:var(--encre);-webkit-user-select:auto;user-select:auto}
+.champ small{display:block;font-weight:400;color:var(--doux);font-size:.9rem;margin-top:4px}
+.champ.ligne{flex-direction:row;align-items:center;gap:14px}
+.champ.ligne input{width:28px;height:28px;flex:none;accent-color:var(--violet)}
+/* IA */
+.champ .ligne{display:flex;align-items:center;gap:14px}
+.champ .ligne input{width:28px;height:28px;flex:none;accent-color:var(--violet)}
+.badge{font-style:normal;font-size:.7rem;background:var(--jaune);border-radius:8px;padding:2px 6px;vertical-align:middle}
+.champ select{font:inherit;font-size:1rem;padding:10px;border:2px solid #e4dbf3;border-radius:14px;background:#fff;color:var(--encre)}
+#iaStatut{font-weight:400}
+.barre-prog{height:12px;background:#efe9ff;border-radius:8px;overflow:hidden;width:100%}
+.barre-prog b{display:block;height:100%;width:0;background:var(--violet);transition:width .3s}
+.lien{background:none;color:var(--doux);text-decoration:underline;font-weight:400;padding:6px}
+#attente{align-items:center;justify-content:center;gap:16px;text-align:center}
+.attente-emo{font-size:5rem;animation:saute .9s ease-in-out infinite}
+.attente-titre{margin:0;font-size:1.6rem}
+.attente-info{color:var(--doux)}
+.attente-texte{color:var(--doux);font-size:.95rem;min-height:5em;max-width:340px;font-style:italic}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<section id="home" class="screen active">
+  <button id="reglages" aria-label="Réglages">⚙️</button>
+  <div class="logo">📖</div>
+  <h1>Hikaya</h1>
+  <p id="sous" class="sous"></p>
+  <button id="commencer" class="gros b-violet">✨ Nouvelle histoire</button>
+  <button id="surprise" class="gros b-jaune">🎲 Histoire surprise</button>
+  <button id="mesHistoires" class="gros b-blanc">📚 Mes histoires</button>
+</section>
+
+<section id="step" class="screen">
+  <div class="barre">
+    <button id="retour" class="rond" aria-label="Retour">⬅️</button>
+    <div id="dots"></div>
+    <button id="des" class="rond" aria-label="Au hasard">🎲</button>
+  </div>
+  <h2 id="question"></h2>
+  <div id="grid"></div>
+</section>
+
+<section id="recap" class="screen">
+  <div id="recapEmo"></div>
+  <button id="raconte" class="gros b-violet">▶︎ Raconte !</button>
+  <button id="recapRetour" class="rond" aria-label="Retour">⬅️</button>
+</section>
+
+<section id="story" class="screen">
+  <div class="barre">
+    <button id="maison" class="rond" aria-label="Accueil">🏠</button>
+    <h2 id="titre"></h2>
+  </div>
+  <div id="scene"></div>
+  <div class="commandes">
+    <button id="lire" class="gros b-violet">▶︎ Écouter</button>
+    <button id="encore" class="gros b-jaune">🔁 Une autre</button>
+    <button id="garder" class="gros b-blanc">🤍 Garder</button>
+  </div>
+  <div id="texte"></div>
+</section>
+
+<section id="settings" class="screen">
+  <div class="barre">
+    <button class="rond" onclick="document.getElementById('sauver').click()" aria-label="Retour">⬅️</button>
+    <h2 style="flex:1;text-align:center;margin:0">Réglages</h2>
+  </div>
+  <label class="champ">Prénom de l'enfant
+    <input id="inPrenom" type="text" autocomplete="off" placeholder="Ayline">
+    <small>Elle peut devenir l'héroïne (👧) et l'histoire se termine par son prénom.</small>
+  </label>
+  <label class="champ ligne"><input id="inRel" type="checkbox">
+    <span>Touches musulmanes<small>Bismillah, Barak Allahou fik, Aïd, Ramadan, invocation du coucher…</small></span>
+  </label>
+  <div class="champ">
+    <label class="ligne"><input id="inIa" type="checkbox">
+      <span>Histoires par IA <em class="badge">expérimental</em><small>Une petite IA, installée dans le téléphone, invente une histoire nouvelle à chaque fois. Rien n'est envoyé sur internet.</small></span>
+    </label>
+    <select id="inModele">
+      <option value="equilibre">Équilibré (environ 1 Go)</option>
+      <option value="leger">Léger (environ 300 Mo)</option>
+    </select>
+    <small id="iaStatut"></small>
+    <div class="barre-prog" hidden><b id="iaBarre"></b></div>
+    <button id="iaTelecharger" class="gros b-jaune" style="width:100%;font-size:1.1rem;padding:14px">⬇️ Télécharger le modèle</button>
+    <button id="iaSupprimer" class="lien" hidden>Supprimer le modèle du téléphone</button>
+  </div>
+  <button id="sauver" class="gros b-violet" style="width:100%">Enregistrer</button>
+</section>
+
+<section id="attente" class="screen">
+  <div id="attenteEmo" class="attente-emo"></div>
+  <h2 class="attente-titre">✍️ J'écris ton histoire…</h2>
+  <div class="barre-prog"><b id="attenteBarre"></b></div>
+  <small id="attenteInfo" class="attente-info"></small>
+  <p id="attenteTexte" class="attente-texte"></p>
+</section>
+
+<section id="library" class="screen">
+  <div class="barre">
+    <button id="bibRetour" class="rond" aria-label="Retour">⬅️</button>
+    <h2>Mes histoires</h2>
+  </div>
+  <div id="liste"></div>
+</section>
+
+<script>
+// ===== Données et générateur d'histoires (sans magie) =====
+const HEROS = [
+  {e:'👧', n:'petite fille', g:'f', moi:1},
+  {e:'🐱', n:'chat', g:'m'}, {e:'🐰', n:'lapin', g:'m'}, {e:'🐫', n:'chameau', g:'m'},
+  {e:'🐴', n:'cheval', g:'m'}, {e:'🐐', n:'chèvre', g:'f'}, {e:'🐑', n:'mouton', g:'m'},
+  {e:'🐒', n:'singe', g:'m'}, {e:'🐶', n:'chien', g:'m'}, {e:'🐻', n:'ours', g:'m', v:1},
+  {e:'🦊', n:'renard', g:'m'}, {e:'🐭', n:'souris', g:'f'}, {e:'🐘', n:'éléphant', g:'m', v:1},
+  {e:'🐢', n:'tortue', g:'f'}, {e:'🐧', n:'pingouin', g:'m'}, {e:'🦁', n:'lion', g:'m'},
+  {e:'🐼', n:'panda', g:'m'}, {e:'🐸', n:'grenouille', g:'f'}, {e:'🦒', n:'girafe', g:'f'},
+  {e:'🦖', n:'dinosaure', g:'m'}
+];
+const AMIS = [
+  {e:'🐥', n:'poussin', g:'m'}, {e:'🕊️', n:'colombe', g:'f'}, {e:'🐞', n:'coccinelle', g:'f'},
+  {e:'🦋', n:'papillon', g:'m'}, {e:'🐌', n:'escargot', g:'m'}, {e:'🐝', n:'abeille', g:'f'},
+  {e:'🦔', n:'hérisson', g:'m'}, {e:'🐿️', n:'écureuil', g:'m'}, {e:'🐟', n:'poisson', g:'m'},
+  {e:'🐦', n:'oiseau', g:'m'}, {e:'🐜', n:'fourmi', g:'f'}, {e:'🐛', n:'chenille', g:'f'},
+  {e:'🐙', n:'pieuvre', g:'f'}, {e:'🦆', n:'canard', g:'m'}, {e:'🐹', n:'hamster', g:'m'},
+  {e:'🦜', n:'perroquet', g:'m'}
+];
+const LIEUX = [
+  {e:'🕌', n:'médina', g:'f', dans:'dans une vieille médina', detail:'avec ses petites ruelles, ses portes colorées et ses chats qui faisaient la sieste au soleil', bg:['#bfe3ff','#fff1dc'], sol:'#e9c9a0', deco:['🕌','🏘️','🐈','🪴','🏘️']},
+  {e:'🧺', n:'souk', g:'m', dans:"au milieu d'un grand souk", detail:'qui sentait bon les épices, les oranges et le pain chaud', bg:['#ffe1b8','#fff6e8'], sol:'#d9a66b', deco:['🧺','🍊','🫒','🏺','🧺']},
+  {e:'⛲', n:'riad', g:'m', dans:'dans un joli riad', detail:'avec une fontaine qui chantait au milieu des orangers', bg:['#c4e8ff','#fff4ea'], sol:'#e7b98f', deco:['⛲','🍊','🌿','🪴','🌸']},
+  {e:'🌴', n:'oasis', g:'f', v:1, dans:'dans une oasis', detail:"où les palmiers donnaient des dattes sucrées, au bord d'un petit lac", bg:['#a9dcff','#fff1d6'], sol:'#e8c07a', deco:['🌴','🐫','🌴','💧','🌴']},
+  {e:'🐪', n:'désert', g:'m', dans:'dans le grand désert du Sahara', detail:"où le sable faisait des vagues jusqu'au bout du monde", bg:['#ffd9a0','#fff1d6'], sol:'#e8c07a', deco:['🐪','⛺','🦎','🌴','🐪']},
+  {e:'🏔️', n:'montagne', g:'f', dans:"dans les montagnes de l'Atlas", detail:'où la neige brillait comme du sucre sur les sommets', bg:['#a9cdf5','#eef5ff'], sol:'#e9eef5', deco:['🏔️','🌲','🐐','⛰️','🌲']},
+  {e:'🏘️', n:'kasbah', g:'f', dans:'dans une grande kasbah', detail:'avec ses murs couleur de terre et ses palmiers tout autour', bg:['#ffd8b0','#fff3e3'], sol:'#c98d5a', deco:['🏘️','🌴','🏘️','🌴','🐐']},
+  {e:'🏖️', n:'plage', g:'f', dans:"au bord d'une jolie plage", detail:'où les vagues faisaient chhh, chhh, sur le sable doré', bg:['#9fd8ff','#e0f4ff'], sol:'#f3d9a0', deco:['🌴','🐚','⛱️','🦀','🌊']},
+  {e:'🌲', n:'forêt', g:'f', dans:'dans une grande forêt', detail:"où les arbres étaient si hauts qu'ils chatouillaient les nuages", bg:['#bfe3ff','#e8f7d4'], sol:'#6fb35f', deco:['🌲','🌳','🍄','🌲','🌳']},
+  {e:'🌷', n:'jardin', g:'m', dans:'dans un jardin plein de fleurs', detail:'qui sentait bon la fraise et la rose', bg:['#c4e8ff','#fdf3ff'], sol:'#7cc36b', deco:['🌷','🌻','🌹','🍓','🌼']},
+  {e:'🚜', n:'ferme', g:'f', dans:'dans une petite ferme', detail:"où l'on entendait meuh, cot-cot et bêê toute la journée", bg:['#b9e0ff','#fff5d6'], sol:'#9ccc65', deco:['🏡','🐄','🐔','🌾','🐑']},
+  {e:'🐠', n:'mer', g:'f', dans:'tout au fond de la mer', detail:'où les algues dansaient doucement', bg:['#2f8fd8','#0f4f8a'], sol:'#e2c88f', deco:['🐠','🪸','🐚','🫧','🐡']},
+  {e:'🌴', n:'jungle', g:'f', dans:'au milieu de la jungle', detail:'où les lianes pendaient comme des balançoires', bg:['#9ed9b0','#e6f8d9'], sol:'#3f8f4a', deco:['🌴','🦜','🌿','🐒','🍌']},
+  {e:'🧊', n:'banquise', g:'f', dans:'sur la banquise', detail:'où tout était blanc et brillant comme un gâteau à la crème', bg:['#b8e3ff','#ffffff'], sol:'#eaf6ff', deco:['🧊','❄️','⛄','🐋','❄️']},
+  {e:'🚀', n:'espace', g:'m', v:1, dans:"tout là-haut, dans l'espace", detail:'au milieu des planètes et des étoiles', bg:['#0b1240','#2a2370'], sol:'#77779a', deco:['🪐','⭐','🚀','🌍','☄️'], nuit:1}
+];
+// ok = les problèmes que l'objet peut aider à résoudre
+const OBJETS = [
+  {e:'🏮', n:'lanterne', g:'f', un:'une jolie lanterne en cuivre', ok:['perdu','tresor','noir','lune'],
+    action:(nom)=>`${nom} alluma la lanterne, et sa douce lumière éclaira tout autour d'eux.`},
+  {e:'🪜', n:'échelle', g:'f', v:1, un:'une grande échelle', ok:['coince','lune','perdu'],
+    action:()=>`Ils posèrent l'échelle bien droite et grimpèrent, barreau après barreau, très prudemment.`},
+  {e:'🪢', n:'corde', g:'f', un:'une longue corde bien solide', ok:['coince','tresor'],
+    action:(nom)=>`${nom} lança la corde et tira tout doucement, de toutes ses forces.`},
+  {e:'🧺', n:'panier', g:'m', un:'un panier rempli de dattes et de msemen', ok:['faim','fete'],
+    action:(nom,h)=>`${nom} ouvrit le panier et partagea tout ce qu'il y avait dedans, sans rien garder pour ${h.g==='f'?'elle':'lui'}.`},
+  {e:'🫖', n:'théière', g:'f', un:'une théière de thé à la menthe', ok:['froid','fete'],
+    action:(nom)=>`${nom} servit deux petits verres de thé à la menthe bien chaud, en le versant de très haut, comme le fait grand-mère.`},
+  {e:'🧣', n:'écharpe', g:'f', v:1, un:'une grande écharpe toute douce', ok:['froid','noir'],
+    action:(nom,h,a)=>`${nom} enroula l'écharpe autour ${G.du(a)}, bien serrée pour ${a.g==='f'?'la':'le'} réchauffer.`},
+  {e:'🪘', n:'derbouka', g:'f', un:'une derbouka', ok:['jouer','fete','perdu','coince'],
+    action:(nom)=>`${nom} tapa sur la derbouka : tak-tak-doum ! Le son résonna jusqu'au bout du chemin.`},
+  {e:'🗺️', n:'carte', g:'f', un:'une vieille carte pleine de dessins', ok:['perdu','tresor'],
+    action:(nom)=>`${nom} déplia la carte, et ils suivirent pas à pas le chemin dessiné dessus.`},
+  {e:'🔍', n:'loupe', g:'f', un:'une grosse loupe', ok:['tresor','perdu'],
+    action:(nom)=>`${nom} regarda partout avec la loupe et repéra de toutes petites traces par terre.`},
+  {e:'🔭', n:'longue-vue', g:'f', un:'une longue-vue', ok:['lune','perdu','tresor'],
+    action:(nom)=>`${nom} regarda dans la longue-vue, tout au loin, en fermant un œil.`},
+  {e:'⚽', n:'ballon', g:'m', un:'un ballon tout rond', ok:['jouer','fete'],
+    action:(nom)=>`${nom} lança le ballon : boing, boing ! Tout le monde avait envie de jouer.`},
+  {e:'🪁', n:'cerf-volant', g:'m', un:'un cerf-volant', ok:['jouer','perdu'],
+    action:()=>`Ils firent voler le cerf-volant si haut qu'on pouvait le voir de très loin.`},
+  {e:'☂️', n:'parapluie', g:'m', un:'un grand parapluie', ok:['pluie','froid'],
+    action:(nom)=>`${nom} ouvrit le grand parapluie, et ils se serrèrent bien au sec en dessous.`},
+  {e:'🚲', n:'vélo', g:'m', un:'un vélo', ok:['perdu','faim'],
+    action:()=>`Ils grimpèrent sur le vélo et pédalèrent, pédalèrent, en faisant dring-dring !`},
+  {e:'⛵', n:'bateau', g:'m', un:'un petit bateau', ok:['perdu','tresor'],
+    action:()=>`Ils montèrent dans le petit bateau et ramèrent doucement, plouf, plouf.`},
+  {e:'📖', n:'livre', g:'m', un:"un livre d'histoires", ok:['noir','jouer'],
+    action:(nom)=>`${nom} ouvrit le livre et lut une belle histoire, d'une voix toute douce.`},
+  {e:'🖍️', n:'crayons', g:'m', pl:1, un:'une boîte de crayons de couleur', ok:['jouer','fete'],
+    action:()=>`Ils sortirent les crayons et dessinèrent ensemble de grandes images pleines de couleurs.`}
+];
+const NOMS = {m:['Caramel','Biscuit','Filou','Pistache','Semsem','Assal','Qamar','Pompon','Grignote','Kamoun'],
+              f:['Noisette','Myrtille','Cannelle','Zitouna','Louza','Nour','Najma','Warda','Plume','Yasmina']};
+const ADJ = [['gentil','gentille'],['curieux','curieuse'],['rigolo','rigolote'],['courageux','courageuse'],['malin','maligne'],['joyeux','joyeuse'],['généreux','généreuse']];
+const ACTIVITES = ['faire des galipettes','chanter des chansons','manger des dattes','faire des câlins','compter les nuages','jouer à cache-cache','sauter dans les flaques','aider tout le monde'];
+
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const G = {
+  le: x => x.pl ? 'les '+x.n : x.v ? "l'"+x.n : (x.g==='f'?'la ':'le ')+x.n,
+  un: x => (x.g==='f'?'une ':'un ')+x.n,
+  du: x => x.v ? "de l'"+x.n : (x.g==='f'?'de la ':'du ')+x.n,
+  il: x => x.g==='f'?'elle':'il',
+  e:  x => x.g==='f'?'e':''
+};
+const petit = a => ({...a, n:(a.g==='f'?'petite ':'petit ')+a.n, v:0});
+
+// rel = touches musulmanes activées
+const PROBLEMES = {
+  perdu: {pb:a=>`${cap(G.le(a))} s'était perdu${G.e(a)} et ne retrouvait plus le chemin de sa maison.`,
+    sol:a=>`Et c'est comme ça qu'ils retrouvèrent la maison ${G.du(a)}, où toute sa famille l'attendait avec plein de bisous.`},
+  tresor: {pb:a=>`${cap(G.le(a))} avait perdu son trésor : une petite bille bleue qui brillait comme le ciel.`,
+    sol:a=>`Et là, juste devant eux, la petite bille bleue brillait ! ${cap(G.le(a))} sauta de joie.`},
+  fete: {pb:(a,h,rel)=> rel
+      ? `C'était bientôt l'Aïd, et ${G.le(a)} voulait préparer une belle fête, mais ${G.il(a)} était tout${G.e(a)} seul${G.e(a)}.`
+      : `C'était l'anniversaire ${G.du(a)}, mais personne n'était venu à sa fête, et ${G.il(a)} était tout${G.e(a)} triste.`,
+    sol:(a,h,rel)=> rel
+      ? `Bientôt, tous les voisins arrivèrent avec des gâteaux et des cornes de gazelle, et tout le monde se souhaita « Aïd Moubarak ! » en riant.`
+      : `Bientôt, tous les voisins arrivèrent pour la fête : il y eut des chansons, des rires et un énorme gâteau aux fraises.`},
+  coince: {pb:a=>`${cap(G.le(a))} était coincé${G.e(a)} tout en haut d'un très grand rocher et n'osait plus descendre.`,
+    sol:(a,h)=>`${cap(G.le(a))} put redescendre tout doucement, sans se faire mal, et remercia ${h.g==='f'?'sa nouvelle amie':'son nouvel ami'} avec un grand sourire.`},
+  noir: {nuit:1, pb:a=>`La nuit commençait à tomber, et ${G.le(a)} avait un peu peur du noir.`,
+    sol:(a,h,rel)=>`Alors les étoiles s'allumèrent une à une, et ${G.le(a)} découvrit que la nuit était douce et pleine de petites lumières.` +
+      (rel ? ` Ensemble, ils récitèrent l'invocation du coucher, et ${G.il(a)} n'eut plus peur du tout.` : ` ${cap(G.il(a))} n'avait plus peur du tout.`)},
+  lune: {nuit:1, pb:(a,h,rel)=> rel
+      ? `Ce soir-là, tout le monde guettait le fin croissant de lune qui annonce le Ramadan, et ${G.le(a)} voulait être le premier à le voir.`
+      : `${cap(G.le(a))} rêvait de voir la lune toute ronde, mais elle se cachait derrière les nuages.`,
+    sol:(a,h,rel)=> rel
+      ? `Et soudain, ils l'aperçurent : un tout petit croissant de lune qui brillait dans le ciel. « Ramadan Moubarak ! » crièrent-ils de joie.`
+      : `Et soudain, les nuages s'écartèrent, et la lune toute ronde apparut, grande et lumineuse.`},
+  jouer: {pb:a=>`${cap(G.le(a))} voulait jouer, mais ${G.il(a)} n'avait personne avec qui jouer.`,
+    sol:()=>`Et bientôt, plein de nouveaux copains arrivèrent pour jouer avec eux : à cache-cache, à chat et à saute-mouton.`},
+  froid: {pb:a=>`${cap(G.le(a))} avait très froid et grelottait de partout.`,
+    sol:a=>`Bien au chaud, ${G.le(a)} arrêta de grelotter et retrouva le sourire.`},
+  faim: {pb:a=>`${cap(G.le(a))} avait très faim, mais son garde-manger était tout vide.`,
+    sol:(a,h,rel)=>`Ils mangèrent tous ensemble, jusqu'à la dernière miette. Miam !` + (rel ? ` « Al hamdoulillah ! » dirent-ils, le ventre bien rempli.` : '')},
+  pluie: {pb:a=>`Il se mit à pleuvoir très fort, et ${G.le(a)} était tout${G.e(a)} mouillé${G.e(a)}.`,
+    sol:()=>`Bien à l'abri, ils écoutèrent la pluie faire plic-ploc, et bientôt un grand arc-en-ciel apparut dans le ciel.`}
+};
+
+// choix = {h, a, l, o} ; opts = {prenom, rel}
+// éléments tirés pour une histoire (partagés avec le mode IA)
+function elements(choix, opts){
+  opts = opts || {};
+  const rel = !!opts.rel, prenom = (opts.prenom||'').trim();
+  const H = HEROS[choix.h], A = petit(AMIS[choix.a]), L = LIEUX[choix.l], O = OBJETS[choix.o];
+  const nom = (H.moi && prenom) ? prenom : pick(NOMS[H.g]);
+  const cle = pick(O.ok), P = PROBLEMES[cle];
+  return {rel, prenom, H, A, L, O, nom, cle, P,
+    titre: H.moi && prenom ? `${nom} et ${G.le(A)}` : `${nom} ${G.le(H)} et ${G.le(A)}`};
+}
+
+function genererHistoire(choix, opts){
+  const {rel, prenom, H, A, L, O, nom, P} = elements(choix, opts);
+  const adj = H.g==='f' ? pick(ADJ)[1] : pick(ADJ)[0];
+  const parts = [];
+  const add = (p, t) => parts.push({p, t});
+
+  if (rel) add(0, 'Bismillah, écoute bien cette histoire.');
+  add(0, pick([
+    `Il était une fois, ${L.dans}, ${G.un(H)} qui s'appelait ${nom}.`,
+    `${cap(L.dans)}, vivait ${G.un(H)} qui s'appelait ${nom}.`,
+    `Il y a très, très longtemps, ${L.dans}, habitait ${G.un(H)} qui s'appelait ${nom}.`
+  ]));
+  add(0, `C'était un endroit merveilleux, ${L.detail}.`);
+  add(0, `${nom} était ${adj} et adorait ${pick(ACTIVITES)}.`);
+
+  add(1, pick([
+    `Un matin, en se promenant, ${nom} rencontra ${G.un(A)}.`,
+    `Un jour, ${nom} entendit un tout petit bruit : c'était ${G.un(A)}.`,
+    `Ce jour-là, ${nom} croisa ${G.un(A)} qui avait l'air bien embêté${G.e(A)}.`
+  ]));
+  add(1, P.pb(A, H, rel));
+  add(1, pick([
+    `« Ne t'inquiète pas, dit ${nom}, je vais t'aider ! »`,
+    `« Viens avec moi, dit ${nom}. À deux, on va trouver une solution ! »`,
+    `${nom} lui fit un sourire : « Je suis là, on va y arriver ensemble. »`
+  ]));
+
+  add(2, pick([
+    `${nom} réfléchit très fort… puis eut une idée : « Et si on prenait ${O.un} ? »`,
+    `En regardant autour d'eux, ${nom} trouva ${O.un}. « Voilà exactement ce qu'il nous faut ! »`
+  ]));
+
+  if (rel) add(3, `« Bismillah ! » dit ${nom}.`);
+  add(3, O.action(nom, H, A));
+  add(3, P.sol(A, H, rel));
+
+  const ami = H.g==='f' ? 'ma meilleure amie' : 'mon meilleur ami';
+  add(4, rel
+    ? `${cap(G.le(A))} fit un gros câlin à ${nom} : « Barak Allahou fik ! Merci, tu es ${ami} ! »`
+    : `${cap(G.le(A))} fit un gros câlin à ${nom} : « Merci, tu es ${ami} ! »`);
+  const ff = H.g==='f' && A.g==='f';
+  add(4, `Depuis ce jour, ${nom} et ${G.le(A)} sont ${ff?'les meilleures amies':'les meilleurs amis'} du monde, et ils jouent souvent ensemble, ${L.dans}.`);
+  const p = prenom ? ', '+prenom : '';
+  add(4, pick([
+    `Et voilà, l'histoire est finie. Bonne nuit${p}, et fais de beaux rêves !`,
+    `Fin. Et maintenant${p}, à toi d'imaginer la prochaine histoire !`
+  ]));
+
+  if (ff) parts.forEach(x => {
+    x.t = x.t.replace(/\bIls\b/g,'Elles').replace(/\bils\b/g,'elles')
+      .replace(/tous les deux/g,'toutes les deux').replace(/tous ensemble/g,'toutes ensemble')
+      .replace(/(avec|devant|autour d') ?eux\b/g,(m,x)=>m.replace('eux','elles'));
+  });
+
+  return {
+    titre: H.moi && prenom ? `${nom} et ${G.le(A)}` : `${nom} ${G.le(H)} et ${G.le(A)}`,
+    choix: {...choix}, nuit: !!(P.nuit || L.nuit), nuitAuDebut: !!L.nuit,
+    parts
+  };
+}
+
+if (typeof module !== 'undefined') module.exports = {HEROS, AMIS, LIEUX, OBJETS, PROBLEMES, G, petit, cap, elements, genererHistoire};
+
+</script>
+<script>
+// ===== Mode IA locale (expérimental) : tout tourne dans le téléphone =====
+const IA_MODELES = {
+  equilibre: {nom:'Équilibré', taille:'environ 1 Go', f16:'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', f32:'Qwen2.5-1.5B-Instruct-q4f32_1-MLC'},
+  leger:     {nom:'Léger',     taille:'environ 300 Mo', f16:'Qwen2.5-0.5B-Instruct-q4f16_1-MLC', f32:'Qwen2.5-0.5B-Instruct-q4f32_1-MLC'}
+};
+
+// ---------- Fonctions pures (testables) ----------
+function iaMessages(el){
+  const {H, A, L, O, nom, P, rel, prenom} = el;
+  const heros = H.moi ? `une petite fille qui s'appelle ${nom}` : `${G.un(H)} qui s'appelle ${nom}`;
+  let sys = "Tu es un conteur pour une petite fille de 4 ans. Tu écris uniquement en français, avec des mots simples et des phrases courtes.\n" +
+    "Règles absolues :\n" +
+    "- Entre 10 et 14 phrases courtes, environ 150 mots.\n" +
+    "- Ton doux, joyeux et rassurant. Aucun méchant, aucune violence, rien qui fasse peur.\n" +
+    "- Aucune magie : pas de fée, sorcière, licorne, dragon, sortilège, baguette, vœu, monstre ni fantôme. Les problèmes se règlent par l'entraide, la gentillesse et l'astuce.\n" +
+    "- Les animaux peuvent parler entre eux.\n" +
+    "- Écris seulement l'histoire : pas de titre, pas de liste, pas d'emoji, pas de commentaire.\n" +
+    "- Termine par une phrase douce pour aller dormir.";
+  if (rel) sys += "\n- La famille est marocaine et musulmane. Glisse naturellement « Bismillah » quand un personnage commence quelque chose, et « Barak Allahou fik » pour dire merci. Ne cite jamais le Coran, aucun hadith ni aucun prophète, et n'invente aucune règle religieuse.";
+  const user = "Écris l'histoire avec ces éléments :\n" +
+    `- Héros : ${heros}.\n` +
+    `- Son ami : ${G.un(A)}.\n` +
+    `- Lieu : ${L.dans}.\n` +
+    `- Problème de l'ami : ${P.pb(A, H, rel)}\n` +
+    `- Objet qui aide : ${O.un}.\n` +
+    "Déroulé : 1) présente " + nom + " et le lieu ; 2) " + nom + " rencontre l'ami et découvre son problème ; " +
+    "3) ils ont l'idée d'utiliser l'objet ; 4) le problème est résolu ; 5) câlin, merci et fin douce" +
+    (prenom ? ` en souhaitant bonne nuit à ${prenom}.` : '.');
+  return [{role:'system', content:sys}, {role:'user', content:user}];
+}
+
+const IA_INTERDITS = /magi|\bfée|sorci|licorne|dragon|baguette|sortil|fant[ôo]me|monstre|enchant|d[ée]mon|diable|djinn|jinn|m[ée]chant|\bmort|mourir|\bsang\b|tuer|\barmes?\b|couteau|\bogre|loup-garou|vampire/i;
+
+function iaNettoyer(txt){
+  return txt
+    .replace(/<\/?[^>]+>/g, '')
+    .replace(/^\s*(titre|title)\s*:.*$/gim, '')
+    .replace(/^#+.*$/gm, '')
+    .replace(/[*_#`]/g, '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
+    .replace(/\s+/g, ' ').trim();
+}
+
+// renvoie {ok, raison}
+function iaVerifier(txt, nom){
+  if (/[Ѐ-ӿ֐-׿぀-鿿가-힯]/.test(txt)) return {ok:false, raison:'langue'};
+  const mots = txt.split(/\s+/).filter(Boolean);
+  if (mots.length < 60) return {ok:false, raison:'trop court'};
+  if (mots.length > 420) return {ok:false, raison:'trop long'};
+  if (IA_INTERDITS.test(txt)) return {ok:false, raison:'mot interdit'};
+  const fr = mots.filter(m => /^(le|la|les|un|une|des|et|de|du|il|elle|est|était|dans|avec|pour|qui|son|sa)$/i.test(m)).length;
+  if (fr / mots.length < 0.12) return {ok:false, raison:'pas assez de français'};
+  if (nom && !txt.includes(nom)) return {ok:false, raison:'héros absent'};
+  return {ok:true};
+}
+
+function iaDecouper(txt){
+  // découpe en phrases sans casser les répliques « … »
+  const brut = txt.match(/[^.!?…]+(?:[.!?…]+(?:\s*»)?|$)/g) || [txt];
+  const phrases = [];
+  brut.map(s => s.trim()).filter(Boolean).forEach(s => {
+    // « … ! » dit Ayline. → reste une seule phrase
+    if (phrases.length && (/^»/.test(s) || /^[a-zà-ÿ]/.test(s) || s.length < 4)) phrases[phrases.length-1] += ' ' + s;
+    else phrases.push(s);
+  });
+  const n = phrases.length;
+  return phrases.map((t, i) => ({p: Math.min(4, Math.floor(i * 5 / n)), t}));
+}
+
+// ---------- Moteur (navigateur uniquement) ----------
+const IA = (function(){
+  let moteur = null, modeleCharge = null, webllm = null;
+  const supporte = () => typeof navigator !== 'undefined' && !!navigator.gpu;
+  async function lib(){ if (!webllm) webllm = await import('./web-llm.js'); return webllm; }
+  async function idModele(cle){
+    const m = IA_MODELES[cle] || IA_MODELES.equilibre;
+    try { const a = await navigator.gpu.requestAdapter(); if (a && a.features && a.features.has('shader-f16')) return m.f16; } catch(e){}
+    return m.f32;
+  }
+  async function enCache(cle){
+    if (!supporte()) return false;
+    try { const w = await lib(); return await w.hasModelInCache(await idModele(cle)); } catch(e){ return false; }
+  }
+  async function charger(cle, progres){
+    const id = await idModele(cle);
+    if (moteur && modeleCharge === id) return moteur;
+    const w = await lib();
+    try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch(e){}
+    if (moteur){ try { await moteur.unload(); } catch(e){} moteur = null; }
+    moteur = await w.CreateMLCEngine(id, {initProgressCallback: r => progres && progres(r.progress || 0, r.text || '')});
+    modeleCharge = id;
+    return moteur;
+  }
+  async function supprimer(cle){
+    const w = await lib(); const id = await idModele(cle);
+    if (moteur && modeleCharge === id){ try { await moteur.unload(); } catch(e){} moteur = null; modeleCharge = null; }
+    await w.deleteModelAllInfoInCache(id);
+  }
+  async function ecrire(el, cle, surTexte, progres){
+    const m = await charger(cle, progres);
+    const essai = async () => {
+      let txt = '';
+      const minuteur = setTimeout(() => { try { m.interruptGenerate(); } catch(e){} }, 150000);
+      try {
+        const flux = await m.chat.completions.create({messages: iaMessages(el), temperature:0.8, top_p:0.9, max_tokens:550, stream:true});
+        for await (const morceau of flux){
+          txt += (morceau.choices[0] && morceau.choices[0].delta && morceau.choices[0].delta.content) || '';
+          surTexte && surTexte(txt);
+        }
+      } finally { clearTimeout(minuteur); }
+      return iaNettoyer(txt);
+    };
+    for (let i = 0; i < 2; i++){
+      const txt = await essai();
+      const v = iaVerifier(txt, el.nom);
+      if (v.ok) return {txt};
+      console.warn('Histoire IA refusée :', v.raison, txt);
+    }
+    return null;
+  }
+  return {supporte, enCache, charger, supprimer, ecrire};
+})();
+
+if (typeof module !== 'undefined') module.exports = {iaMessages, iaNettoyer, iaVerifier, iaDecouper, IA_MODELES};
+
+</script>
+<script>
+// ===== Interface =====
+(function(){
+const $ = s => document.querySelector(s);
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+// ---------- Voix ----------
+let voix = null;
+function choisirVoix(){
+  if (!('speechSynthesis' in window)) return;
+  const vs = speechSynthesis.getVoices().filter(v => (v.lang||'').toLowerCase().startsWith('fr'));
+  const score = v => {
+    let s = 0; const n = (v.name+' '+v.voiceURI).toLowerCase();
+    if ((v.lang||'').toLowerCase()==='fr-fr') s += 5;
+    if (/premium/.test(n)) s += 20;
+    if (/enhanced|améliorée|amelioree/.test(n)) s += 15;
+    if (/amélie|amelie|audrey|aurélie|aurelie|marie|thomas/.test(n)) s += 8;
+    if (/eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|jacques/.test(n)) s -= 10;
+    return s;
+  };
+  vs.sort((a,b) => score(b)-score(a));
+  voix = vs[0] || null;
+}
+if ('speechSynthesis' in window){ choisirVoix(); speechSynthesis.onvoiceschanged = choisirVoix; }
+function utt(t){
+  const u = new SpeechSynthesisUtterance(t.replace(/[«»]/g,''));
+  u.lang = 'fr-FR'; if (voix) u.voice = voix; u.rate = 0.9; u.pitch = 1.05;
+  return u;
+}
+function dire(t){
+  if (!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel(); speechSynthesis.speak(utt(t));
+}
+
+// ---------- Écrans ----------
+function ecran(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id===id));
+  window.scrollTo(0,0);
+}
+
+// ---------- Étapes de choix ----------
+const prenom = () => store.get('app.prenom','Ayline');
+const rel = () => store.get('app.rel', true);
+const ETAPES = [
+  {k:'h', q:"Qui sera le héros de l'histoire ?", liste:HEROS, nomme:x=>(x.moi && prenom()) ? prenom() : G.le(x)},
+  {k:'a', q:'Et son petit ami, ce sera qui ?', liste:AMIS, nomme:x=>G.le(petit(x))},
+  {k:'l', q:"Où se passe l'histoire ?", liste:LIEUX, nomme:x=>G.le(x)},
+  {k:'o', q:'Quel objet va les aider ?', liste:OBJETS, nomme:x=>G.le(x)}
+];
+let etape = 0, choix = {}, histoire = null;
+const rnd = n => Math.floor(Math.random()*n);
+
+function afficherEtape(){
+  const E = ETAPES[etape];
+  $('#question').textContent = E.q;
+  $('#dots').innerHTML = ETAPES.map((_,i)=>`<i class="${i<etape?'fait':i===etape?'ici':''}"></i>`).join('');
+  $('#grid').innerHTML = E.liste.map((x,i)=>
+    `<button class="choix${choix[E.k]===i?' sel':''}" data-i="${i}"><span class="emo">${x.e}</span><span class="lbl">${x.moi ? (prenom()||'moi') : x.n}</span></button>`).join('');
+  ecran('step');
+}
+function choisir(i){
+  const E = ETAPES[etape];
+  choix[E.k] = i;
+  const dit = cap(E.nomme(E.liste[i])) + ' !';
+  etape++;
+  if (etape < ETAPES.length){ dire(dit+' '+ETAPES[etape].q); afficherEtape(); }
+  else { dire(dit+" Super ! Appuie sur le gros bouton pour écouter l'histoire."); afficherRecap(); }
+}
+$('#grid').addEventListener('click', e => {
+  const b = e.target.closest('.choix'); if (!b) return;
+  b.classList.add('sel'); choisir(+b.dataset.i);
+});
+$('#des').onclick = () => choisir(rnd(ETAPES[etape].liste.length));
+$('#retour').onclick = () => { if (etape===0) ecran('home'); else { etape--; afficherEtape(); } };
+
+function afficherRecap(){
+  $('#recapEmo').innerHTML = ETAPES.map(E=>`<span>${E.liste[choix[E.k]].e}</span>`).join('');
+  ecran('recap');
+}
+$('#recapRetour').onclick = () => { etape = ETAPES.length-1; afficherEtape(); };
+
+// ---------- Scène ----------
+const POS = [{x:4,y:30,s:3.2},{x:76,y:34,s:3.6},{x:42,y:40,s:2},{x:88,y:18,s:2.2},{x:20,y:16,s:2}];
+function scene(st, part){
+  const L = LIEUX[st.choix.l], H = HEROS[st.choix.h], A = AMIS[st.choix.a], O = OBJETS[st.choix.o];
+  const nuit = st.nuitAuDebut || (st.nuit && part>=1);
+  const astre = nuit ? '🌙' : '☀️';
+  let h = `<div class="ciel" style="background:linear-gradient(${L.bg[0]},${L.bg[1]})"></div>`;
+  h += `<div class="sol" style="background:${L.sol}"></div>`;
+  if (nuit) h += `<div class="nuit"></div><div class="etoiles">✨ ⭐ ✨</div>`;
+  h += `<div class="astre">${astre}</div>`;
+  h += L.deco.map((d,i)=>`<span class="deco" style="left:${POS[i].x}%;bottom:${POS[i].y}%;font-size:${POS[i].s}rem">${d}</span>`).join('');
+  h += `<span class="perso heros ${part>=3?'saute':'flotte'}">${H.e}</span>`;
+  if (part>=1) h += `<span class="perso ami entre ${part>=3?'saute':''}">${A.e}</span>`;
+  if (part===2) h += `<span class="objet apparait">${O.e}<i>💡</i></span>`;
+  if (part>=3) h += `<span class="objet utilise">${O.e}</span>`;
+  if (part>=4) h += `<div class="coeurs"><b>💖</b><b>💛</b><b>💜</b><b>💖</b><b>💚</b></div>`;
+  $('#scene').innerHTML = h;
+}
+
+// ---------- Histoire ----------
+let partCourante = -1, enLecture = false, verrou = null;
+function ouvrirHistoire(st){
+  histoire = st; partCourante = -1;
+  $('#titre').textContent = st.titre;
+  $('#texte').innerHTML = st.parts.map((x,i)=>`<span data-i="${i}">${x.t} </span>`).join('');
+  surligner(-1); scene(st, 0);
+  majCoeur();
+  ecran('story');
+}
+function surligner(i){
+  document.querySelectorAll('#texte span').forEach(s => s.classList.toggle('lu', +s.dataset.i===i));
+  if (i<0) return;
+  const p = histoire.parts[i].p;
+  if (p !== partCourante){ partCourante = p; scene(histoire, p); }
+  const s = document.querySelector(`#texte span[data-i="${i}"]`);
+  if (s && s.scrollIntoView) s.scrollIntoView({block:'nearest', behavior:'smooth'});
+}
+$('#texte').addEventListener('click', e => { const s = e.target.closest('span'); if (s && !enLecture) surligner(+s.dataset.i); });
+
+async function garderEcran(on){
+  try {
+    if (on && 'wakeLock' in navigator) verrou = await navigator.wakeLock.request('screen');
+    else if (!on && verrou){ await verrou.release(); verrou = null; }
+  } catch(e){}
+}
+function lire(){
+  if (!('speechSynthesis' in window)){ alert("La lecture à voix haute n'est pas disponible sur cet appareil."); return; }
+  speechSynthesis.cancel();
+  enLecture = true; majBouton(); garderEcran(true);
+  const n = histoire.parts.length;
+  histoire.parts.forEach((x,i)=>{
+    const u = utt(x.t);
+    u.onstart = () => surligner(i);
+    if (i===n-1) u.onend = () => { enLecture = false; majBouton(); garderEcran(false); };
+    speechSynthesis.speak(u);
+  });
+}
+function arreter(){
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  enLecture = false; majBouton(); garderEcran(false);
+}
+function majBouton(){ $('#lire').innerHTML = enLecture ? '⏹︎ Stop' : '▶︎ Écouter'; }
+$('#lire').onclick = () => enLecture ? arreter() : lire();
+
+function nouvelle(c){ return genererHistoire(c, {prenom:prenom(), rel:rel()}); }
+
+// ---------- Mode IA ----------
+const iaActive = () => store.get('app.ia', false) && IA.supporte();
+const iaCle = () => store.get('app.iaModele', 'equilibre');
+let iaPret = false, iaOccupe = false;
+function iaVerifierCache(){ if (!IA.supporte()) return; IA.enCache(iaCle()).then(ok => { iaPret = ok; majIaStatut(); }); }
+
+async function raconter(c){
+  arreter();
+  if (!(iaActive() && iaPret) || iaOccupe){ ouvrirHistoire(nouvelle(c)); lire(); return; }
+  iaOccupe = true;
+  dire("Attends un petit peu, j'écris ton histoire !");   // débloque aussi la voix sur iPhone
+  const el = elements(c, {prenom:prenom(), rel:rel()});
+  $('#attenteEmo').textContent = HEROS[c.h].e + ' ' + AMIS[c.a].e;
+  $('#attenteTexte').textContent = '';
+  $('#attenteBarre').style.width = '0%';
+  $('#attenteInfo').textContent = 'Préparation…';
+  ecran('attente');
+  let st = null;
+  try {
+    const r = await IA.ecrire(el, iaCle(),
+      txt => { $('#attenteBarre').style.width = '100%'; $('#attenteInfo').textContent = 'Écriture…'; $('#attenteTexte').textContent = txt.slice(-220); },
+      (p) => { $('#attenteBarre').style.width = Math.round(p*100)+'%'; $('#attenteInfo').textContent = 'Réveil de l\'IA… '+Math.round(p*100)+' %'; });
+    if (r) st = {titre: el.titre, choix: {...c}, nuit: !!(el.P.nuit || el.L.nuit), nuitAuDebut: !!el.L.nuit, parts: iaDecouper(r.txt), ia: true};
+  } catch(e){ console.warn('IA indisponible', e); }
+  iaOccupe = false;
+  ouvrirHistoire(st || nouvelle(c));
+  lire();
+}
+$('#raconte').onclick = () => raconter(choix);
+$('#encore').onclick = () => raconter(histoire.choix);
+$('#maison').onclick = () => { arreter(); ecran('home'); };
+
+// ---------- Bibliothèque ----------
+const BIB = 'app.bib';
+function estGardee(){ return histoire && histoire.id && store.get(BIB,[]).some(x=>x.id===histoire.id); }
+function majCoeur(){ $('#garder').textContent = estGardee() ? '💖 Gardée' : '🤍 Garder'; }
+$('#garder').onclick = () => {
+  let b = store.get(BIB,[]);
+  if (estGardee()) b = b.filter(x=>x.id!==histoire.id);
+  else { histoire.id = histoire.id || Date.now(); histoire.date = new Date().toISOString(); b.unshift(histoire); }
+  store.set(BIB, b); majCoeur();
+};
+function afficherBib(){
+  const b = store.get(BIB,[]);
+  $('#liste').innerHTML = b.length ? b.map(x=>
+    `<div class="item"><button class="ouvrir" data-id="${x.id}"><span class="emo">${HEROS[x.choix.h].e}${AMIS[x.choix.a].e}</span><span>${x.titre}</span></button><button class="suppr" data-id="${x.id}" aria-label="Supprimer">🗑️</button></div>`).join('')
+    : '<p class="vide">Pas encore d\'histoire gardée.<br>Appuie sur 🤍 pendant une histoire pour la garder ici.</p>';
+  ecran('library');
+}
+$('#liste').addEventListener('click', e => {
+  const o = e.target.closest('.ouvrir'), s = e.target.closest('.suppr');
+  const b = store.get(BIB,[]);
+  if (o){ const st = b.find(x=>x.id==o.dataset.id); if (st){ ouvrirHistoire(st); lire(); } }
+  if (s && confirm('Supprimer cette histoire ?')){ store.set(BIB, b.filter(x=>x.id!=s.dataset.id)); afficherBib(); }
+});
+$('#bibRetour').onclick = () => ecran('home');
+
+// ---------- Accueil ----------
+$('#commencer').onclick = () => { etape = 0; choix = {}; dire(ETAPES[0].q); afficherEtape(); };
+$('#surprise').onclick = () => {
+  choix = {h:rnd(HEROS.length), a:rnd(AMIS.length), l:rnd(LIEUX.length), o:rnd(OBJETS.length)};
+  raconter(choix);
+};
+$('#mesHistoires').onclick = afficherBib;
+function majAccueil(){ $('#sous').textContent = prenom() ? `Les histoires de ${prenom()}` : 'Invente ton histoire !'; }
+majAccueil();
+$('#reglages').onclick = () => {
+  $('#inPrenom').value = prenom(); $('#inRel').checked = rel();
+  $('#inIa').checked = store.get('app.ia', false); $('#inModele').value = iaCle();
+  majIaStatut(); iaVerifierCache(); ecran('settings');
+};
+$('#sauver').onclick = () => {
+  store.set('app.prenom', $('#inPrenom').value.trim());
+  store.set('app.rel', $('#inRel').checked);
+  store.set('app.ia', $('#inIa').checked);
+  majAccueil(); ecran('home');
+};
+function majIaStatut(info){
+  const s = $('#iaStatut'); if (!s) return;
+  const m = IA_MODELES[iaCle()];
+  if (!IA.supporte()){ s.textContent = "Cet appareil ne permet pas l'IA locale (il faut iOS 26 ou plus récent). Les histoires classiques restent disponibles."; $('#iaTelecharger').hidden = true; $('#iaSupprimer').hidden = true; return; }
+  if (info){ s.textContent = info; return; }
+  s.textContent = iaPret ? `✅ Modèle ${m.nom} installé dans le téléphone.` : `Modèle ${m.nom} pas encore téléchargé (${m.taille}, à faire en Wi-Fi).`;
+  $('#iaTelecharger').hidden = iaPret; $('#iaSupprimer').hidden = !iaPret;
+}
+$('#inModele').onchange = () => { store.set('app.iaModele', $('#inModele').value); iaPret = false; majIaStatut('Vérification…'); iaVerifierCache(); };
+$('#iaTelecharger').onclick = async () => {
+  if (iaOccupe) return;
+  iaOccupe = true; $('#iaTelecharger').disabled = true; $('#iaBarre').parentNode.hidden = false;
+  try {
+    await IA.charger(iaCle(), (p, t) => { $('#iaBarre').style.width = Math.round(p*100)+'%'; majIaStatut('Téléchargement… '+Math.round(p*100)+' % — garde l\'app ouverte.'); });
+    iaPret = true; majIaStatut();
+  } catch(e){
+    console.warn(e);
+    majIaStatut("Échec : " + (/device|memory|lost/i.test(String(e)) ? "mémoire insuffisante, essaie le modèle Léger." : "vérifie la connexion et réessaie."));
+  }
+  iaOccupe = false; $('#iaTelecharger').disabled = false; $('#iaBarre').parentNode.hidden = true;
+};
+$('#iaSupprimer').onclick = async () => {
+  if (!confirm('Supprimer le modèle du téléphone ?')) return;
+  try { await IA.supprimer(iaCle()); } catch(e){}
+  iaPret = false; majIaStatut();
+};
+if (store.get('app.ia', false)) iaVerifierCache();
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+})();
+
+</script>
+</body>
+</html>
